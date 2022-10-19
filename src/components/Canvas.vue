@@ -4,10 +4,10 @@
 </template>
 
 <script lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, defineComponent } from 'vue';
 import { setupDraggableContainer } from "../services/drag";
 
-export default {
+export default defineComponent({
   name: "PlaygroundCanvas",
   props: ['canvases'],
   setup(props) {
@@ -22,7 +22,7 @@ export default {
       canvasContainer
     };
   }
-}
+})
 </script>
 
 <style scoped>

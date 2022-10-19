@@ -97,7 +97,7 @@ import { reactive, SetupContext } from 'vue';
 import ECAOptionsInterface from '../interfaces/eca-options';
 import { Brush, Operation, Tools } from "@element-plus/icons-vue";
 
-export default {
+export default defineComponent({
   name: "PlaygroundSideMenu",
   props: {
     ecaOptions: {
@@ -135,7 +135,7 @@ export default {
       emitUpdate
     };
   }
-}
+});
 </script>
 
 <style>
