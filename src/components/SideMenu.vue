@@ -93,7 +93,7 @@
 </template>
 
 <script lang="ts">
-import { reactive, SetupContext } from 'vue';
+import { reactive, SetupContext, defineComponent } from 'vue';
 import ECAOptionsInterface from '../interfaces/eca-options';
 import { Brush, Operation, Tools } from "@element-plus/icons-vue";
 

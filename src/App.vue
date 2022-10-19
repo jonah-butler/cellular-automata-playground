@@ -63,15 +63,6 @@ export default {
 
     }
 
-
-
-    // const worker = new Worker(new URL('./ecaworker.ts', import.meta.url));
-    // worker.postMessage('hello');
-    // worker.onmessage = (e: Event) => {
-    //   console.log(e);
-    //   console.log('back in app.vue');
-    // }
-
     return {
       ctx,
       draw,
