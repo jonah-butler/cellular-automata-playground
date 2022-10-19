@@ -1,1 +1,0 @@
-(function(){"use strict";importScripts("../services/eca.ts"),onmessage=s=>{const e=s.data.canvas,t=JSON.parse(s.data.options);e.height=t.generations,e.width=t.width;const o=e.getContext("2d");new ECA(t.rule,t.width,t.generations,t.randomize,t.zeroColor,t.oneColor,t.cellSize).init(o),postMessage({status:"completed"})}})();
