@@ -19,18 +19,22 @@
         />
       </el-select>
     </div>
+    <div class="button-wrapper">
+      <el-button @click="openDrawer" class="expand" type="success" :icon="Expand"></el-button>
+    </div>
     <el-button @click="saveCanvas" class="download" :disabled="!isCanvasActive" type="success" :icon="Download"></el-button>
   </div>
 </template>
 
 <script lang="ts">
 import { ref, SetupContext, defineComponent, watch } from 'vue';
-import { Download } from '@element-plus/icons-vue';
+import { Download, Expand } from '@element-plus/icons-vue';
 
 export default defineComponent({
   name: "PlaygroundHeader",
   components: {
-    Download
+    Download,
+    Expand
   },
   props: {
     types: {
@@ -59,13 +63,19 @@ export default defineComponent({
 
     const emitCAType = (caType: string): void => {
       context.emit("updateCAType", caType);
+    };
+
+    const openDrawer = () => {
+      context.emit('openDrawer');
     }
 
     return {
       caType,
       emitCAType,
       Download,
+      Expand,
       saveCanvas,
+      openDrawer,
       isCanvasActive
     };
   }
@@ -102,7 +112,18 @@ export default defineComponent({
 }
 .download {
   position: absolute;
-  top: 39px;
+  top: 52px;
   right: 1px;
+}
+.button-wrapper {
+  position: absolute;
+  top: 52px;
+  right: 51px;
+}
+
+@media screen and (min-width: 992px){
+  .button-wrapper {
+    display: none !important;
+  }
 }
 </style>

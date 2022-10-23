@@ -20,6 +20,7 @@ export default {
   setup() {
 
     const interval = ref(0);
+    const drawer = ref(false);
     const isActive = ref<boolean>(false);
 
     let ecaOptions: ECAOptionsInterface = reactive({
@@ -95,6 +96,11 @@ export default {
       link.download = `canvas_${new Date().getTime()}.png`;
       link.href = canvas.toDataURL();
       link.click();
+    };
+
+    const openDrawer = () => {
+      console.log('hit open drawer');
+      drawer.value = true;
     }
 
     const draw = (emittedType: string): void => {
@@ -150,6 +156,7 @@ export default {
     return {
       ctx,
       draw,
+      drawer,
       caType,
       caTypes,
       canvases,
@@ -159,6 +166,7 @@ export default {
       caOptions,
       mnOptions,
       isActive,
+      openDrawer,
       saveCanvas,
       clearCanvas,
       updateECAOptions,
@@ -174,13 +182,14 @@ export default {
   <Header
     @updateCAType="updateCA"
     @saveCanvas="saveCanvas"
+    @openDrawer="openDrawer"
     :types="caTypes"
     :selectedType="caType"
     :isActive="isActive"
   />
 
   <el-row class="editor">
-    <el-col :span="4">
+    <el-col :span="4" class="hidden-sm-and-down">
 
       <Menu1
         v-if="caType === 'Elementary Cellular Automata'"
@@ -210,7 +219,40 @@ export default {
       />
 
     </el-col>
-    <el-col :span="20" id="viewPort">
+    <el-col :sm="24" :md="20" :lg="20" :xl="20" id="viewPort">
+
+      <el-drawer
+        v-model="drawer"
+        title="Cellular Automata Options"
+        direction="rtl"
+      >
+        <Menu1
+          v-if="caType === 'Elementary Cellular Automata'"
+          @draw="draw"
+          :ecaOptions="ecaOptions"
+          @updateECAOptions="updateECAOptions"
+          @clearCanvas="clearCanvas"
+          :isActive="isActive"
+        />
+
+        <Menu2
+          v-else-if="caType === 'Cellular Automata'"
+          @draw="draw"
+          :caOptions="caOptions"
+          @updateCAOptions="updateCAOptions"
+          @clearCanvas="clearCanvas"
+          :isActive="isActive"
+        />
+
+        <Menu3
+          v-else
+          @draw="draw"
+          :mnOptions="mnOptions"
+          @clearCanvas="clearCanvas"
+          @updateMNOptions="updateMNOptions"
+          :isActive="isActive"
+        />
+      </el-drawer>
 
       <Canvas :canvases="canvases" ref="canvas" v-loading="loading"/>
 
@@ -218,11 +260,14 @@ export default {
   </el-row>
 </template>
 
-<style scoped>
+<style>
 .editor {
   height: calc(100vh - 145px);
 }
 #viewPort {
   height: 100%;
+}
+.el-drawer.rtl {
+  width: 70% !important;
 }
 </style>
