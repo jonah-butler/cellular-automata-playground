@@ -1,17 +1,25 @@
 <script lang="ts">
 import { reactive, ref } from 'vue';
 import ECAOptionsInterface from './interfaces/eca-options';
+import CAOptionsInterface from './interfaces/ca-options';
+import MNOptionsInterface from './interfaces/mn-options';
 import Header from './components/Header.vue';
 import Canvas from './components/Canvas.vue';
-import Menu from './components/SideMenu.vue';
+import Menu1 from './components/SideMenu1.vue';
+import Menu2 from './components/SideMenu2.vue';
+import Menu3 from './components/SideMenu3.vue';
 
 export default {
   components: {
     Header,
-    Menu,
+    Menu1,
+    Menu2,
+    Menu3,
     Canvas
   },
   setup() {
+
+    const interval = ref(0);
 
     let ecaOptions: ECAOptionsInterface = reactive({
       zeroColor: '#000',
@@ -23,6 +31,37 @@ export default {
       randomize: false,
     });
 
+    let caOptions: CAOptionsInterface = reactive({
+      zeroColor: '#f38443',
+      oneColor: '#000',
+      generations: 500,
+      cellSize: 2,
+      width: 500,
+      lifeCycles: 100,
+    });
+
+    let mnOptions: MNOptionsInterface = reactive({
+      zeroColor: '#000',
+      oneColor: '#fff',
+      generations: 500,
+      cellSize: 1,
+      width: 750,
+      lifeCylces: 10,
+    });
+
+    const caType = ref('Elementary Cellular Automata');
+    const caTypes = [
+      {
+        name: "Elementary Cellular Automata",
+      },
+      {
+        name: "Cellular Automata",
+      },
+      {
+        name: "Moore's Neighborhood",
+      },
+    ];
+
     let canvases = ref<Array<HTMLCanvasElement>>([]);
     const loading = ref(false);
     const ctx = ref<CanvasRenderingContext2D>();
@@ -31,7 +70,34 @@ export default {
       ecaOptions = updatedOptions;
     };
 
-    const draw = () => {
+    const updateCAOptions = (updatedOptions: CAOptionsInterface): void => {
+      caOptions = updatedOptions;
+    };
+
+    const updateMNOptions = (updatedOptions: MNOptionsInterface): void => {
+      mnOptions = updatedOptions;
+    };
+
+    const updateCA = (updatedType: string): void => {
+      caType.value = updatedType;
+    };
+
+    const stopGeneration = (): void => {
+      const worker = new Worker(new URL('./workers/ecaworker.ts', import.meta.url));
+      worker.postMessage(interval.value);
+    }
+
+    const draw = (emittedType: string): void => {
+
+      let options;
+
+      if(emittedType === 'eca') {
+        options = ecaOptions;
+      } else if(emittedType === 'ca') {
+        options = caOptions;
+      } else {
+        options = mnOptions;
+      }
 
       loading.value = true;
 
@@ -45,19 +111,22 @@ export default {
       const offScreen = (canvases.value[0] as any).transferControlToOffscreen();
       
       const worker = new Worker(new URL('./workers/ecaworker.ts', import.meta.url));
-      const options = JSON.stringify(ecaOptions);
+      const stringifiedOptions = JSON.stringify(options);
       worker.postMessage(
         {
         canvas: offScreen,
-        options: options
+        options: stringifiedOptions,
+        type: caType.value
         },
         [offScreen]
       );
 
       worker.onmessage = (e: MessageEvent) => {
         if(e.data.status === "completed") {
-
           loading.value = false;
+        }
+        if(e.data.interval) {
+          interval.value = e.data.interval;
         }
       };
 
@@ -66,10 +135,18 @@ export default {
     return {
       ctx,
       draw,
+      caType,
+      caTypes,
       canvases,
       loading,
+      updateCA,
       ecaOptions,
-      updateECAOptions
+      caOptions,
+      mnOptions,
+      updateECAOptions,
+      updateCAOptions,
+      updateMNOptions,
+      stopGeneration
     }
   }
 }
@@ -77,14 +154,34 @@ export default {
 </script>
 
 <template>
-  <Header />
+  <Header
+    @updateCAType="updateCA"
+    :types="caTypes"
+    :selectedType="caType"
+  />
   <el-row class="editor">
     <el-col :span="4">
 
-      <Menu
+      <Menu1
+        v-if="caType === 'Elementary Cellular Automata'"
         @draw="draw"
         :ecaOptions="ecaOptions"
         @updateECAOptions="updateECAOptions"
+      />
+
+      <Menu2
+        v-else-if="caType === 'Cellular Automata'"
+        @draw="draw"
+        :caOptions="caOptions"
+        @updateCAOptions="updateCAOptions"
+        @stopGeneration="stopGeneration"
+      />
+
+      <Menu3
+        v-else
+        @draw="draw"
+        :mnOptions="mnOptions"
+        @updateMNOptions="updateMNOptions"
       />
 
     </el-col>

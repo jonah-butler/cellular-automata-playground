@@ -20,7 +20,7 @@
     </el-menu-item>
     <el-menu-item index="2">
       <el-icon><tools /></el-icon>
-      <span>ECA Parameters</span>
+      <span>MN Parameters</span>
       <div class="controls">
         <div class="controls__item">
           <label>Cell Size</label>
@@ -35,11 +35,11 @@
           />
         </div>
         <div class="controls__item">
-          <label>Rule</label>
+          <label>Life Cycles</label>
           <el-input-number
-            v-model="options.rule"
-            :min="0"
-            :max="255"
+            v-model="options.lifeCycles"
+            :min="1"
+            :max="20"
             :step="1"
             controls-position="right"
             size="small"
@@ -66,15 +66,6 @@
             @change="emitUpdate"
           />
         </div>
-        <div class="controls__item">
-          <label>Random Gen 0</label>
-          <el-checkbox
-            v-model="options.randomize"
-            label="Randomize"
-            border
-            @change="emitUpdate"
-          />
-        </div>
       </div>
     </el-menu-item>
     <el-menu-item index="4">
@@ -84,9 +75,9 @@
         <div class="controls__item">
           <el-button @click="draw" type="primary" plain>Generate</el-button>
         </div>
-        <div class="controls__item">
-          <el-button type="warning" plain>Clear Canvas</el-button>
-        </div>
+        <!-- <div class="controls__item">
+          <el-button type="warning" plain>Stop Generating</el-button>
+        </div> -->
       </div>
     </el-menu-item>
   </el-menu>
@@ -94,14 +85,14 @@
 
 <script lang="ts">
 import { reactive, SetupContext, defineComponent } from 'vue';
-import ECAOptionsInterface from '../interfaces/eca-options';
+import MNOptions from '../interfaces/mn-options';
 import { Brush, Operation, Tools } from "@element-plus/icons-vue";
 
 export default defineComponent({
   name: "PlaygroundSideMenu",
   props: {
-    ecaOptions: {
-      type: Object as () => ECAOptionsInterface
+    mnOptions: {
+      type: Object as () => MNOptions
     }
   },
   components: {
@@ -112,21 +103,20 @@ export default defineComponent({
   setup(props, context: SetupContext) {
 
     const options = reactive({
-      zeroColor: props.ecaOptions?.zeroColor,
-      oneColor: props.ecaOptions?.oneColor,
-      rule: props.ecaOptions?.rule,
-      generations: props.ecaOptions?.generations,
-      cellSize: props.ecaOptions?.cellSize,
-      width: props.ecaOptions?.width,
-      randomize: props.ecaOptions?.randomize
+      zeroColor: props.mnOptions?.zeroColor,
+      oneColor: props.mnOptions?.oneColor,
+      generations: props.mnOptions?.generations,
+      cellSize: props.mnOptions?.cellSize,
+      width: props.mnOptions?.width,
+      lifeCycles: props.mnOptions?.lifeCylces,
     });
 
     const emitUpdate = () => {
-      context.emit('updateECAOptions', options);
+      context.emit('updateMNOptions', options);
     };
 
     const draw = () => {
-      context.emit('draw');
+      context.emit('draw', 'mn');
     }
 
     return {

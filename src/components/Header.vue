@@ -3,13 +3,19 @@
     <img class="cell1" src="../assets/cell1.png" alt="">
     <img class="cell2" src="../assets/cell2.png" alt="">
     <div class="header__inner">
-      <h1>{{ caType }}</h1>
-      <el-select v-model="caType" class="m-2" placeholder="Select" size="small">
+      <h1>{{ selectedType }}</h1>
+      <el-select
+        v-model="caType"
+        class="m-2"
+        placeholder="Select"
+        size="small"
+        @change="emitCAType"
+      >
         <el-option
-          v-for="type in caTypes"
+          v-for="type in types"
           :key="type"
-          :label="type"
-          :value="type"
+          :label="type.name"
+          :value="type.name"
         />
       </el-select>
     </div>
@@ -17,25 +23,33 @@
 </template>
 
 <script lang="ts">
-import { ref } from 'vue';
+import { ref, SetupContext, defineComponent } from 'vue';
 
-export default {
+export default defineComponent({
   name: "PlaygroundHeader",
-  setup() {
-    const caType = ref('Elementary Cellular Automata');
-    const caTypes = [
-      "Elementary Cellular Automata",
-      "Cellular Automata",
-      "Moore's Neighborhood"
-    ];
+  props: {
+    types: {
+      type: Array,
+      required: true,
+    },
+    selectedType: {
+      type: String,
+      required: true,
+    }
+  },
+  setup(props, context: SetupContext) {
+    const caType = ref(props.selectedType);
+
+    const emitCAType = (caType: string): void => {
+      context.emit("updateCAType", caType);
+    }
 
     return {
       caType,
-      caTypes
+      emitCAType
     };
   }
-
-}
+});
 </script>
 
 <style>
