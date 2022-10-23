@@ -85,7 +85,7 @@
           <el-button @click="draw" type="primary" plain>Generate</el-button>
         </div>
         <div class="controls__item">
-          <el-button type="warning" plain>Clear Canvas</el-button>
+          <el-button @click="clearCanvas" :disabled="!isCanvasActive" type="warning" plain>Clear Canvas</el-button>
         </div>
       </div>
     </el-menu-item>
@@ -93,7 +93,7 @@
 </template>
 
 <script lang="ts">
-import { reactive, SetupContext, defineComponent } from 'vue';
+import { reactive, SetupContext, defineComponent, ref, watch } from 'vue';
 import ECAOptionsInterface from '../interfaces/eca-options';
 import { Brush, Operation, Tools } from "@element-plus/icons-vue";
 
@@ -102,7 +102,10 @@ export default defineComponent({
   props: {
     ecaOptions: {
       type: Object as () => ECAOptionsInterface
-    }
+    },
+    isActive: {
+      type: Boolean
+    },
   },
   components: {
     Brush,
@@ -110,6 +113,8 @@ export default defineComponent({
     Tools
   },
   setup(props, context: SetupContext) {
+
+    const isCanvasActive = ref(props.isActive);
 
     const options = reactive({
       zeroColor: props.ecaOptions?.zeroColor,
@@ -120,6 +125,14 @@ export default defineComponent({
       width: props.ecaOptions?.width,
       randomize: props.ecaOptions?.randomize
     });
+
+    watch(() => props.isActive, (n, o) => {
+      isCanvasActive.value = n;
+    });
+
+    const clearCanvas = () => {
+      context.emit('clearCanvas');
+    };
 
     const emitUpdate = () => {
       context.emit('updateECAOptions', options);
@@ -132,7 +145,9 @@ export default defineComponent({
     return {
       draw,
       options,
-      emitUpdate
+      emitUpdate,
+      clearCanvas,
+      isCanvasActive,
     };
   }
 });

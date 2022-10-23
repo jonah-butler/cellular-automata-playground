@@ -76,7 +76,7 @@
           <el-button @click="draw" type="primary" plain>Generate</el-button>
         </div>
         <div class="controls__item">
-          <el-button @click="stopGenerating" type="warning" plain>Stop Generating</el-button>
+          <el-button @click="clearCanvas" :disabled="!isCanvasActive" type="warning" plain>Clear Canvas</el-button>
         </div>
       </div>
     </el-menu-item>
@@ -84,7 +84,7 @@
 </template>
 
 <script lang="ts">
-import { reactive, SetupContext, defineComponent } from 'vue';
+import { reactive, SetupContext, defineComponent, ref, watch } from 'vue';
 import CAOptions from '../interfaces/ca-options';
 import { Brush, Operation, Tools } from "@element-plus/icons-vue";
 
@@ -93,7 +93,10 @@ export default defineComponent({
   props: {
     caOptions: {
       type: Object as () => CAOptions
-    }
+    },
+    isActive: {
+      type: Boolean
+    },
   },
   components: {
     Brush,
@@ -101,6 +104,8 @@ export default defineComponent({
     Tools
   },
   setup(props, context: SetupContext) {
+
+    const isCanvasActive = ref(props.isActive);
 
     const options = reactive({
       zeroColor: props.caOptions?.zeroColor,
@@ -111,6 +116,14 @@ export default defineComponent({
       lifeCycles: props.caOptions?.lifeCycles
     });
 
+    watch(() => props.isActive, (n, o) => {
+      isCanvasActive.value = n;
+    });
+
+    const clearCanvas = () => {
+      context.emit('clearCanvas');
+    };
+
     const emitUpdate = () => {
       context.emit('updateCAOptions', options);
     };
@@ -119,15 +132,13 @@ export default defineComponent({
       context.emit('draw', 'ca');
     }
 
-    const stopGenerating = () => {
-      context.emit('stopGeneration');
-    }
 
     return {
       draw,
       options,
       emitUpdate,
-      stopGenerating
+      clearCanvas,
+      isCanvasActive
     };
   }
 });

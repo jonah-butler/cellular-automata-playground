@@ -20,6 +20,7 @@ export default {
   setup() {
 
     const interval = ref(0);
+    const isActive = ref<boolean>(false);
 
     let ecaOptions: ECAOptionsInterface = reactive({
       zeroColor: '#000',
@@ -82,12 +83,25 @@ export default {
       caType.value = updatedType;
     };
 
-    const stopGeneration = (): void => {
-      const worker = new Worker(new URL('./workers/ecaworker.ts', import.meta.url));
-      worker.postMessage(interval.value);
+    const clearCanvas = (): void => {
+      canvases.value.pop();
+      document.querySelector('.canvas-container')?.firstElementChild!.remove();
+      isActive.value = false;
+    };
+    
+    const saveCanvas = (): void => {
+      const canvas = canvases.value[0];
+      const link = document.createElement('a');
+      link.download = `canvas_${new Date().getTime()}.png`;
+      link.href = canvas.toDataURL();
+      link.click();
     }
 
     const draw = (emittedType: string): void => {
+
+      if(isActive.value) {
+        isActive.value = false;
+      }
 
       let options;
 
@@ -123,6 +137,7 @@ export default {
 
       worker.onmessage = (e: MessageEvent) => {
         if(e.data.status === "completed") {
+          isActive.value = true;
           loading.value = false;
         }
         if(e.data.interval) {
@@ -143,10 +158,12 @@ export default {
       ecaOptions,
       caOptions,
       mnOptions,
+      isActive,
+      saveCanvas,
+      clearCanvas,
       updateECAOptions,
       updateCAOptions,
       updateMNOptions,
-      stopGeneration
     }
   }
 }
@@ -156,9 +173,12 @@ export default {
 <template>
   <Header
     @updateCAType="updateCA"
+    @saveCanvas="saveCanvas"
     :types="caTypes"
     :selectedType="caType"
+    :isActive="isActive"
   />
+
   <el-row class="editor">
     <el-col :span="4">
 
@@ -167,6 +187,8 @@ export default {
         @draw="draw"
         :ecaOptions="ecaOptions"
         @updateECAOptions="updateECAOptions"
+        @clearCanvas="clearCanvas"
+        :isActive="isActive"
       />
 
       <Menu2
@@ -174,14 +196,17 @@ export default {
         @draw="draw"
         :caOptions="caOptions"
         @updateCAOptions="updateCAOptions"
-        @stopGeneration="stopGeneration"
+        @clearCanvas="clearCanvas"
+        :isActive="isActive"
       />
 
       <Menu3
         v-else
         @draw="draw"
         :mnOptions="mnOptions"
+        @clearCanvas="clearCanvas"
         @updateMNOptions="updateMNOptions"
+        :isActive="isActive"
       />
 
     </el-col>

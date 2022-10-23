@@ -19,14 +19,19 @@
         />
       </el-select>
     </div>
+    <el-button @click="saveCanvas" class="download" :disabled="!isCanvasActive" type="success" :icon="Download"></el-button>
   </div>
 </template>
 
 <script lang="ts">
-import { ref, SetupContext, defineComponent } from 'vue';
+import { ref, SetupContext, defineComponent, watch } from 'vue';
+import { Download } from '@element-plus/icons-vue';
 
 export default defineComponent({
   name: "PlaygroundHeader",
+  components: {
+    Download
+  },
   props: {
     types: {
       type: Array as () => Array<Record<string, string>>,
@@ -35,10 +40,22 @@ export default defineComponent({
     selectedType: {
       type: String,
       required: true,
+    },
+    isActive: {
+      type: Boolean
     }
   },
   setup(props, context: SetupContext) {
     const caType = ref(props.selectedType);
+    const isCanvasActive = ref(props.isActive);
+
+    watch(() => props.isActive, (n, o) => {
+      isCanvasActive.value = n;
+    });
+
+    const saveCanvas = (): void => {
+      context.emit('saveCanvas');
+    };
 
     const emitCAType = (caType: string): void => {
       context.emit("updateCAType", caType);
@@ -46,7 +63,10 @@ export default defineComponent({
 
     return {
       caType,
-      emitCAType
+      emitCAType,
+      Download,
+      saveCanvas,
+      isCanvasActive
     };
   }
 });
@@ -72,8 +92,6 @@ export default defineComponent({
   width: 300px;
   height: 100%;
   z-index: -1;
-  /* border-top: 67px solid transparent;
-  border-left: 998px solid #242424; */
   z-index: -1;
 }
 .cell1, .cell2 {
@@ -82,4 +100,9 @@ export default defineComponent({
 .header__inner {
   margin-left: 10px;
 }
-</style>s
+.download {
+  position: absolute;
+  top: 39px;
+  right: 1px;
+}
+</style>

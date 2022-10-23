@@ -75,16 +75,16 @@
         <div class="controls__item">
           <el-button @click="draw" type="primary" plain>Generate</el-button>
         </div>
-        <!-- <div class="controls__item">
-          <el-button type="warning" plain>Stop Generating</el-button>
-        </div> -->
+        <div class="controls__item">
+          <el-button @click="clearCanvas" :disabled="!isCanvasActive" type="warning" plain>Clear Canvas</el-button>
+        </div>
       </div>
     </el-menu-item>
   </el-menu>
 </template>
 
 <script lang="ts">
-import { reactive, SetupContext, defineComponent } from 'vue';
+import { reactive, SetupContext, defineComponent, ref, watch } from 'vue';
 import MNOptions from '../interfaces/mn-options';
 import { Brush, Operation, Tools } from "@element-plus/icons-vue";
 
@@ -93,6 +93,9 @@ export default defineComponent({
   props: {
     mnOptions: {
       type: Object as () => MNOptions
+    },
+    isActive: {
+      type: Boolean,
     }
   },
   components: {
@@ -102,6 +105,8 @@ export default defineComponent({
   },
   setup(props, context: SetupContext) {
 
+    const isCanvasActive = ref(props.isActive);
+
     const options = reactive({
       zeroColor: props.mnOptions?.zeroColor,
       oneColor: props.mnOptions?.oneColor,
@@ -110,6 +115,14 @@ export default defineComponent({
       width: props.mnOptions?.width,
       lifeCycles: props.mnOptions?.lifeCylces,
     });
+
+    watch(() => props.isActive, (n, o) => {
+      isCanvasActive.value = n;
+    });
+    
+    const clearCanvas = () => {
+      context.emit('clearCanvas');
+    }
 
     const emitUpdate = () => {
       context.emit('updateMNOptions', options);
@@ -122,7 +135,9 @@ export default defineComponent({
     return {
       draw,
       options,
-      emitUpdate
+      emitUpdate,
+      clearCanvas,
+      isCanvasActive
     };
   }
 });
