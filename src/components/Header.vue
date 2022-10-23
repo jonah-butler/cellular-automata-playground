@@ -29,7 +29,7 @@ export default defineComponent({
   name: "PlaygroundHeader",
   props: {
     types: {
-      type: Array,
+      type: Array as () => Array<Record<string, string>>,
       required: true,
     },
     selectedType: {
