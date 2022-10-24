@@ -19,6 +19,12 @@ export default {
   },
   setup() {
 
+    const isMobile = ref(false);
+
+    if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
+      isMobile.value = true;
+    }
+
     const interval = ref(0);
     const drawer = ref(false);
     const isActive = ref<boolean>(false);
@@ -254,7 +260,8 @@ export default {
         />
       </el-drawer>
 
-      <Canvas :canvases="canvases" ref="canvas" v-loading="loading"/>
+      <Canvas v-if="!isMobile" :canvases="canvases" ref="canvas" v-loading="loading"/>
+      <h2 v-else>:( Sorry, this app uses Web Worker technology, and that is not available on your current device</h2>
 
     </el-col>
   </el-row>
