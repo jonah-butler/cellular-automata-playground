@@ -683,7 +683,7 @@ onmessage = (e: MessageEvent) => {
         options.lifeCycles
       );
       mn.gameSetup(ctx);
-      mn.runGame(ctx, 10);
+      mn.runGame(ctx, options.lifeCycles);
   
       postMessage({
         status: "completed"

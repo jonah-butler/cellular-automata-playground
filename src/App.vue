@@ -138,6 +138,7 @@ export default {
       
       const worker = new Worker(new URL('./workers/ecaworker.ts', import.meta.url));
       const stringifiedOptions = JSON.stringify(options);
+      console.log(stringifiedOptions);
       worker.postMessage(
         {
         canvas: offScreen,
@@ -172,6 +173,7 @@ export default {
       caOptions,
       mnOptions,
       isActive,
+      isMobile,
       openDrawer,
       saveCanvas,
       clearCanvas,
