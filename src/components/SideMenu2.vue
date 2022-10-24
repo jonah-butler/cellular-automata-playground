@@ -39,7 +39,7 @@
           <el-input-number
             v-model="options.lifeCycles"
             :min="1"
-            :max="500"
+            :max="5000"
             :step="1"
             controls-position="right"
             size="small"
@@ -51,6 +51,8 @@
           <el-input-number
             v-model="options.generations"
             :step="1"
+            :min="1"
+            :max="1000"
             controls-position="right"
             size="small"
             @change="emitUpdate"
@@ -61,6 +63,8 @@
           <el-input-number
             v-model="options.width"
             :step="1"
+            :min="1"
+            :max="1000"
             controls-position="right"
             size="small"
             @change="emitUpdate"
