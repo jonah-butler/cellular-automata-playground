@@ -142,9 +142,8 @@ export default {
         .appendChild(canvases.value[0]);
       const offScreen = (canvases.value[0] as any).transferControlToOffscreen();
 
-      // const worker = new Worker(new URL('./workers/ecaworker.ts', import.meta.url));
       const worker = new Worker(
-        new URL("../public/worker1.ts", import.meta.url)
+        new URL("./workers/ecaworker.ts", import.meta.url)
       );
       const stringifiedOptions = JSON.stringify(options);
       console.log(stringifiedOptions);
