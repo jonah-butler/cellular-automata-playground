@@ -1,13 +1,13 @@
 <script lang="ts">
-import { reactive, ref } from 'vue';
-import ECAOptionsInterface from './interfaces/eca-options';
-import CAOptionsInterface from './interfaces/ca-options';
-import MNOptionsInterface from './interfaces/mn-options';
-import Header from './components/Header.vue';
-import Canvas from './components/Canvas.vue';
-import Menu1 from './components/SideMenu1.vue';
-import Menu2 from './components/SideMenu2.vue';
-import Menu3 from './components/SideMenu3.vue';
+import { reactive, ref } from "vue";
+import ECAOptionsInterface from "./interfaces/eca-options";
+import CAOptionsInterface from "./interfaces/ca-options";
+import MNOptionsInterface from "./interfaces/mn-options";
+import Header from "./components/Header.vue";
+import Canvas from "./components/Canvas.vue";
+import Menu1 from "./components/SideMenu1.vue";
+import Menu2 from "./components/SideMenu2.vue";
+import Menu3 from "./components/SideMenu3.vue";
 
 export default {
   components: {
@@ -15,13 +15,16 @@ export default {
     Menu1,
     Menu2,
     Menu3,
-    Canvas
+    Canvas,
   },
   setup() {
-
     const isMobile = ref(false);
 
-    if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
+    if (
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      )
+    ) {
       isMobile.value = true;
     }
 
@@ -30,8 +33,8 @@ export default {
     const isActive = ref<boolean>(false);
 
     let ecaOptions: ECAOptionsInterface = reactive({
-      zeroColor: '#000',
-      oneColor: '#fff',
+      zeroColor: "#000",
+      oneColor: "#fff",
       rule: 90,
       generations: 1000,
       cellSize: 1,
@@ -40,8 +43,8 @@ export default {
     });
 
     let caOptions: CAOptionsInterface = reactive({
-      zeroColor: '#f38443',
-      oneColor: '#000',
+      zeroColor: "#f38443",
+      oneColor: "#000",
       generations: 500,
       cellSize: 2,
       width: 500,
@@ -49,15 +52,15 @@ export default {
     });
 
     let mnOptions: MNOptionsInterface = reactive({
-      zeroColor: '#000',
-      oneColor: '#fff',
+      zeroColor: "#000",
+      oneColor: "#fff",
       generations: 500,
       cellSize: 1,
       width: 750,
       lifeCylces: 10,
     });
 
-    const caType = ref('Elementary Cellular Automata');
+    const caType = ref("Elementary Cellular Automata");
     const caTypes = [
       {
         name: "Elementary Cellular Automata",
@@ -92,34 +95,33 @@ export default {
 
     const clearCanvas = (): void => {
       canvases.value.pop();
-      document.querySelector('.canvas-container')?.firstElementChild!.remove();
+      document.querySelector(".canvas-container")?.firstElementChild!.remove();
       isActive.value = false;
     };
-    
+
     const saveCanvas = (): void => {
       const canvas = canvases.value[0];
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.download = `canvas_${new Date().getTime()}.png`;
       link.href = canvas.toDataURL();
       link.click();
     };
 
     const openDrawer = () => {
-      console.log('hit open drawer');
+      console.log("hit open drawer");
       drawer.value = true;
-    }
+    };
 
     const draw = (emittedType: string): void => {
-
-      if(isActive.value) {
+      if (isActive.value) {
         isActive.value = false;
       }
 
       let options;
 
-      if(emittedType === 'eca') {
+      if (emittedType === "eca") {
         options = ecaOptions;
-      } else if(emittedType === 'ca') {
+      } else if (emittedType === "ca") {
         options = caOptions;
       } else {
         options = mnOptions;
@@ -127,38 +129,44 @@ export default {
 
       loading.value = true;
 
-      if(canvases.value.length) {
+      if (canvases.value.length) {
         canvases.value.pop();
-        document.querySelector('.canvas-container')?.firstElementChild!.remove();
+        document
+          .querySelector(".canvas-container")
+          ?.firstElementChild!.remove();
       }
-      canvases.value.push(document.createElement('canvas'));
-      canvases.value[0].id = 'canvas';
-      document.querySelector('.canvas-container')!.appendChild(canvases.value[0]);
+      canvases.value.push(document.createElement("canvas"));
+      canvases.value[0].id = "canvas";
+      document
+        .querySelector(".canvas-container")!
+        .appendChild(canvases.value[0]);
       const offScreen = (canvases.value[0] as any).transferControlToOffscreen();
-      
-      const worker = new Worker(new URL('./workers/ecaworker.ts', import.meta.url));
+
+      // const worker = new Worker(new URL('./workers/ecaworker.ts', import.meta.url));
+      const worker = new Worker(
+        new URL("../public/worker1.ts", import.meta.url)
+      );
       const stringifiedOptions = JSON.stringify(options);
       console.log(stringifiedOptions);
       worker.postMessage(
         {
-        canvas: offScreen,
-        options: stringifiedOptions,
-        type: caType.value
+          canvas: offScreen,
+          options: stringifiedOptions,
+          type: caType.value,
         },
         [offScreen]
       );
 
       worker.onmessage = (e: MessageEvent) => {
-        if(e.data.status === "completed") {
+        if (e.data.status === "completed") {
           isActive.value = true;
           loading.value = false;
         }
-        if(e.data.interval) {
+        if (e.data.interval) {
           interval.value = e.data.interval;
         }
       };
-
-    }
+    };
 
     return {
       ctx,
@@ -180,10 +188,9 @@ export default {
       updateECAOptions,
       updateCAOptions,
       updateMNOptions,
-    }
-  }
-}
-
+    };
+  },
+};
 </script>
 
 <template>
@@ -198,7 +205,6 @@ export default {
 
   <el-row class="editor">
     <el-col :span="4" class="hidden-sm-and-down">
-
       <Menu1
         v-if="caType === 'Elementary Cellular Automata'"
         @draw="draw"
@@ -225,10 +231,8 @@ export default {
         @updateMNOptions="updateMNOptions"
         :isActive="isActive"
       />
-
     </el-col>
     <el-col :sm="24" :md="20" :lg="20" :xl="20" id="viewPort">
-
       <el-drawer
         v-model="drawer"
         title="Cellular Automata Options"
@@ -262,9 +266,16 @@ export default {
         />
       </el-drawer>
 
-      <Canvas v-if="!isMobile" :canvases="canvases" ref="canvas" v-loading="loading"/>
-      <h2 v-else>:( Sorry, this app uses Web Worker technology, and that is not available on your current device</h2>
-
+      <Canvas
+        v-if="!isMobile"
+        :canvases="canvases"
+        ref="canvas"
+        v-loading="loading"
+      />
+      <h2 v-else>
+        :( Sorry, this app uses Web Worker technology, and that is not available
+        on your current device
+      </h2>
     </el-col>
   </el-row>
 </template>
