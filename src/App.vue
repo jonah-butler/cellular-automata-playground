@@ -3,11 +3,13 @@ import { reactive, ref } from "vue";
 import ECAOptionsInterface from "./interfaces/eca-options";
 import CAOptionsInterface from "./interfaces/ca-options";
 import MNOptionsInterface from "./interfaces/mn-options";
+import DWOptions from "./interfaces/dw-options";
 import Header from "./components/Header.vue";
 import Canvas from "./components/Canvas.vue";
 import Menu1 from "./components/SideMenu1.vue";
 import Menu2 from "./components/SideMenu2.vue";
 import Menu3 from "./components/SideMenu3.vue";
+import Menu4 from "./components/SideMenu4.vue";
 
 export default {
   components: {
@@ -15,6 +17,7 @@ export default {
     Menu1,
     Menu2,
     Menu3,
+    Menu4,
     Canvas,
   },
   setup() {
@@ -60,6 +63,16 @@ export default {
       lifeCylces: 10,
     });
 
+    let dwOptions: DWOptions = {
+      cellSize: 3,
+      deadColor: "#181818",
+      livingColor: "#fff",
+      width: 500,
+      generations: 500,
+      drunkards: 10,
+      steps: 1000,
+    };
+
     const caType = ref("Elementary Cellular Automata");
     const caTypes = [
       {
@@ -70,6 +83,9 @@ export default {
       },
       {
         name: "Moore's Neighborhood",
+      },
+      {
+        name: "Drunkard's Walk",
       },
     ];
 
@@ -87,6 +103,10 @@ export default {
 
     const updateMNOptions = (updatedOptions: MNOptionsInterface): void => {
       mnOptions = updatedOptions;
+    };
+
+    const updateDWOptions = (updatedOptions: DWOptions): void => {
+      dwOptions = updatedOptions;
     };
 
     const updateCA = (updatedType: string): void => {
@@ -123,9 +143,14 @@ export default {
         options = ecaOptions;
       } else if (emittedType === "ca") {
         options = caOptions;
-      } else {
+      } else if (emittedType === "mn") {
         options = mnOptions;
+      } else {
+        options = dwOptions;
       }
+
+      // const options = dwOptions;
+      // caType.value = "Drunkard's Walk";
 
       loading.value = true;
 
@@ -179,6 +204,7 @@ export default {
       ecaOptions,
       caOptions,
       mnOptions,
+      dwOptions,
       isActive,
       isMobile,
       openDrawer,
@@ -187,6 +213,7 @@ export default {
       updateECAOptions,
       updateCAOptions,
       updateMNOptions,
+      updateDWOptions,
     };
   },
 };
@@ -223,11 +250,19 @@ export default {
       />
 
       <Menu3
-        v-else
+        v-else-if="caType === 'Moore\'s Neighborhood'"
         @draw="draw"
         :mnOptions="mnOptions"
         @clearCanvas="clearCanvas"
         @updateMNOptions="updateMNOptions"
+        :isActive="isActive"
+      />
+      <Menu4
+        v-else
+        @draw="draw"
+        :dwOptions="dwOptions"
+        @clearCanvas="clearCanvas"
+        @updateDWOptions="updateDWOptions"
         :isActive="isActive"
       />
     </el-col>
@@ -256,11 +291,19 @@ export default {
         />
 
         <Menu3
-          v-else
+          v-else-if="caType === 'Moore\'s Neighborhood'"
           @draw="draw"
           :mnOptions="mnOptions"
           @clearCanvas="clearCanvas"
           @updateMNOptions="updateMNOptions"
+          :isActive="isActive"
+        />
+        <Menu4
+          v-else
+          @draw="draw"
+          :dwOptions="dwOptions"
+          @clearCanvas="clearCanvas"
+          @updateDWOptions="updateDWOptions"
           :isActive="isActive"
         />
       </el-drawer>

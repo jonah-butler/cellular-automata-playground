@@ -4,6 +4,148 @@
  * CELLULAR AUTOMATA - CLASSIC
  *
  */
+class DrunkardsWalk {
+  cell_size: number;
+  dead_color: string;
+  living_color: string;
+  cells_in_col: number;
+  cells_in_row: number;
+  steps: number;
+  walks: number;
+  active_array: Array<Array<number>>;
+  visited_steps: Array<Record<string, number>>;
+
+  constructor(
+    cell_size = 1,
+    dead_color = "#181818",
+    living_color = "#fff",
+    cells_in_col = 1000,
+    cells_in_row = 1000,
+    steps: 2000,
+    walks: 12
+  ) {
+    this.cell_size = cell_size;
+    this.dead_color = dead_color;
+    this.living_color = living_color;
+    this.cells_in_col = cells_in_col / this.cell_size;
+    this.cells_in_row = cells_in_row / this.cell_size;
+    this.steps = steps;
+    this.walks = walks;
+    this.active_array = [];
+    this.visited_steps = [];
+  }
+
+  _arrayInitialization() {
+    for (let i = 0; i < this.cells_in_row; i++) {
+      this.active_array[i] = [];
+
+      for (let j = 0; j < this.cells_in_col; j++) {
+        this.active_array[i][j] = 0;
+      }
+    }
+  }
+
+  _randomHelper(limit: number): number {
+    return Math.floor(Math.random() * limit);
+  }
+
+  _generatePoints() {
+    const x = this._randomHelper(this.cells_in_row);
+    const y = this._randomHelper(this.cells_in_col);
+    this._walk({ x, y });
+  }
+
+  _walk(index: Record<string, number>) {
+    this.active_array[index.x][index.y] = 1;
+    this.visited_steps.push({ x: index.x, y: index.y });
+
+    let tempx = index.x;
+    let tempy = index.y;
+
+    for (let drunkard = 0; drunkard < this.walks; drunkard++) {
+      for (let step = 1; step < this.steps; step++) {
+        const neighbors = this._neighbors(tempx, tempy);
+        const nextStep = this._randomHelper(Object.keys(neighbors).length);
+
+        tempx = neighbors[nextStep].x;
+        tempy = neighbors[nextStep].y;
+
+        const value = this._evaluateCoordinates(tempx, tempy);
+        if (value === undefined) {
+          tempx = index.x;
+          tempy = index.y;
+          // could revert the step back here so we could get our full steps worth too
+        } else {
+          this.active_array[tempx][tempy] = 1;
+          this.visited_steps.push({ x: tempx, y: tempy });
+        }
+      }
+
+      const nextIndex = this._randomHelper(this.visited_steps.length);
+      const coordinate = this.visited_steps[nextIndex];
+      tempx = coordinate.x;
+      tempy = coordinate.y;
+    }
+  }
+
+  _evaluateCoordinates(x: number, y: number): number | undefined {
+    let val;
+    try {
+      val = this.active_array[x][y];
+    } catch {
+      val = undefined;
+    }
+    if (val === 0 || val === 1) {
+      return val;
+    } else {
+      return undefined;
+    }
+  }
+
+  _fillArray(ctx: CanvasRenderingContext2D) {
+    for (let i = 0; i < this.cells_in_row; i++) {
+      for (let j = 0; j < this.cells_in_col; j++) {
+        const color =
+          this.active_array[i][j] === 1 ? this.living_color : this.dead_color;
+        // console.log("color: ", this.active_array[i][j], " at x, y: ", i, j);
+        ctx.fillStyle = color;
+        ctx.fillRect(
+          j * this.cell_size,
+          i * this.cell_size,
+          this.cell_size,
+          this.cell_size
+        );
+      }
+    }
+  }
+
+  _neighbors(x: number, y: number) {
+    const n: { [char: number]: Record<string, number> } = {
+      0: { x: x - 1, y: y - 1 },
+      1: { x: x - 1, y },
+      2: { x: x - 1, y: y + 1 },
+      3: { x, y: y - 1 },
+      4: { x, y: y + 1 },
+      5: { x: x + 1, y: y - 1 },
+      6: { x: x + 1, y },
+      7: { x: x + 1, y: y + 1 },
+    };
+    return n;
+  }
+
+  init(ctx: CanvasRenderingContext2D): void {
+    this._arrayInitialization();
+    this._generatePoints();
+    this._fillArray(ctx);
+  }
+}
+
+/**
+ *
+ *
+ * CELLULAR AUTOMATA - CLASSIC
+ *
+ */
 
 class CellularAutomata {
   cell_size: number;
@@ -508,6 +650,7 @@ onmessage = (e: MessageEvent) => {
     canvas.width = options.width;
 
     const ctx: CanvasRenderingContext2D = canvas.getContext("2d")!;
+    console.log(options);
 
     if (e.data.type === "Elementary Cellular Automata") {
       const eca = new ECA(
@@ -550,6 +693,20 @@ onmessage = (e: MessageEvent) => {
       mn.gameSetup(ctx);
       mn.runGame(ctx, options.lifeCycles);
 
+      postMessage({
+        status: "completed",
+      });
+    } else if (e.data.type === "Drunkard's Walk") {
+      const dw = new DrunkardsWalk(
+        options.cellSize,
+        options.deadColor,
+        options.livingColor,
+        options.generations,
+        options.width,
+        options.steps,
+        options.drunkards
+      );
+      dw.init(ctx);
       postMessage({
         status: "completed",
       });
