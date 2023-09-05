@@ -128,7 +128,6 @@ export default {
     };
 
     const openDrawer = () => {
-      console.log("hit open drawer");
       drawer.value = true;
     };
 
@@ -149,9 +148,6 @@ export default {
         options = dwOptions;
       }
 
-      // const options = dwOptions;
-      // caType.value = "Drunkard's Walk";
-
       loading.value = true;
 
       if (canvases.value.length) {
@@ -171,7 +167,6 @@ export default {
         new URL("./workers/ecaworker.ts", import.meta.url)
       );
       const stringifiedOptions = JSON.stringify(options);
-      console.log(stringifiedOptions);
       worker.postMessage(
         {
           canvas: offScreen,
@@ -220,6 +215,7 @@ export default {
 </script>
 
 <template>
+<div>
   <Header
     @updateCAType="updateCA"
     @saveCanvas="saveCanvas"
@@ -320,6 +316,7 @@ export default {
       </h2>
     </el-col>
   </el-row>
+  </div>
 </template>
 
 <style>

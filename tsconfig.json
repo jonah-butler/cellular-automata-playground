@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
+    "types": ["vite/client"],
+    "target": "es2022",
     "useDefineForClassFields": true,
-    "module": "ESNext",
+    "module": "es2022",
     "moduleResolution": "Node",
     "strict": true,
     "jsx": "preserve",
