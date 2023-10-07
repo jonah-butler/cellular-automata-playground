@@ -1,7 +1,7 @@
 /**
  *
  *
- * CELLULAR AUTOMATA - CLASSIC
+ * DRUNKARD'S WALK
  *
  */
 class DrunkardsWalk {
@@ -19,8 +19,8 @@ class DrunkardsWalk {
     cell_size = 1,
     dead_color = "#181818",
     living_color = "#fff",
-    cells_in_col = 1000,
-    cells_in_row = 1000,
+    cells_in_col = 100,
+    cells_in_row = 100,
     steps: 2000,
     walks: 12
   ) {
@@ -427,10 +427,10 @@ class MooresNeighborhood {
   }
 
   mooresNeighborhood(ctx: CanvasRenderingContext2D): void {
-    let temp = [];
+    let temp: Array<Array<number>> = [];
 
     for (let i = 0; i < this.cells_in_row; i++) {
-      let arr = [];
+      let arr: Array<number> = [];
 
       for (let j = 0; j < this.cells_in_col; j++) {
         arr.push(this.updateMooresNeighborhood(i, j));
@@ -505,6 +505,13 @@ interface RuleMap {
   [key: string]: number | null;
 }
 
+/**
+ *
+ *
+ * ELEMENTARY CELLULAR AUTOMATA
+ *
+ */
+
 class ECA {
   cell_size: number;
   randomizeGen0: boolean;
@@ -574,7 +581,9 @@ class ECA {
       throw new Error("value does not fit into a single byte");
     }
 
+    // convert rule ie. 0 - 255 to base2: binary
     const num = this.rule.toString(2);
+
     this.ruleset =
       Array(8 - num.length)
         .fill(0)
@@ -639,6 +648,194 @@ class ECA {
   }
 }
 
+class CCA {
+  cell_size: number;
+
+  width: number;
+  generations: number;
+
+  range: number;
+  threshold: number;
+  states: Array<string>;
+
+  active_array: Array<Array<number>>;
+
+  lifeCycles: number;
+
+  interval: number | any;
+
+  animate: boolean;
+
+  useNoise: boolean;
+
+  constructor(cell_size = 1, width = 750, generations = 750, range = 1, threshold = 3, states: Array<string>, lifeCycles = 300, animate = true, useNoise = true) {
+    this.cell_size = cell_size;
+    this.width = width;
+    this.generations = generations;
+    this.range = range;
+    this.threshold = threshold;
+    this.states = states;
+    this.active_array = [];
+    this.lifeCycles = lifeCycles;
+    this.interval = null;
+    this.animate = animate;
+    this.useNoise = useNoise;
+  }
+
+  generateRandomState(): number {
+    return Math.floor(Math.random() * this.states.length);
+  }
+
+  // first traversal fills entire
+  // width and height with a random
+  // color from this.states
+  fillWithNoise(): void {
+    console.log(this.width, this.generations)
+    for(let i = 0; i < this.width; i++) {
+      this.active_array[i] = [];
+
+      for(let j = 0; j < this.generations; j++) {
+        this.active_array[i][j] = this.generateRandomState()
+      }
+
+    }
+  }
+
+  randomizeGen0(): void {
+    for (let i = 0; i < this.width; i++) {
+      this.active_array[i] = [];
+      for(let j = 0; j < this.generations; j++) {
+        if(j === 0) {
+          this.active_array[i][j] = this.generateRandomState();
+        } else {
+          this.active_array[i][j] = 0;
+        }
+      }
+    }
+  }
+
+
+  fillCanvas(ctx: CanvasRenderingContext2D): void {
+    for(let i = 0; i < this.active_array.length; i++) {
+      for(let j = 0; j < this.active_array[i].length; j++) {
+
+        let color = this.states[this.active_array[i][j]];
+
+        ctx.fillStyle = color;
+        ctx.fillRect(
+          i * this.cell_size,
+          j * this.cell_size,
+          this.cell_size,
+          this.cell_size,
+        );
+
+      }
+    }
+  }
+
+  runLifeCycle(ctx: CanvasRenderingContext2D): void {
+    let temp: Array<Array<number>> = [];
+      for(let i = 0; i < this.width; i++) {
+        let arr: Array<number> = [];
+        for(let j = 0; j < this.generations; j++) {
+
+          arr.push(this.evaluateNeighborhood(i, j));      
+
+        }
+        temp.push(arr);
+      }
+      this.active_array = temp;
+      this.fillCanvas(ctx);
+  }
+
+  evaluateNeighborhood(row: number, col: number): number {
+    let total = 0;
+    let evaluator: number;
+
+    const target = this.active_array[row][col];
+
+    if(target === this.states.length - 1) {
+      evaluator = 0;
+    } else {
+      evaluator = target + 1;
+    }
+
+    total += this.evaluateHelper(row - this.range, col - this.range, evaluator);
+    total += this.evaluateHelper(row - this.range, col, evaluator);
+    total += this.evaluateHelper(row - this.range, col + this.range, evaluator);
+    total += this.evaluateHelper(row, col - this.range, evaluator);
+    total += this.evaluateHelper(row, col + this.range, evaluator);
+    total += this.evaluateHelper(row + this.range, col - this.range, evaluator);
+    total += this.evaluateHelper(row + this.range, col, evaluator);
+    total += this.evaluateHelper(row + this.range, col + this.range, evaluator);
+
+    if(total >= this.threshold) {
+      return evaluator;
+    }
+    return target;
+
+  }
+
+  evaluateHelper(row: number, col: number, evaluator: number): number {
+    let tempRow;
+    let tempCol;
+    
+    if(row < 0) {
+      tempRow = this.active_array.length - 1;
+    } else if (row === this.active_array.length) {
+      tempRow = 0;
+    } else {
+      tempRow = row;
+    }
+    if(col < 0) {
+      tempCol = this.active_array[tempRow].length - 1;
+    } else if(col === this.active_array[tempRow].length) {
+      tempCol = 0;
+    } else {
+      tempCol = col;
+    }
+
+    const neighbor = this.active_array[tempRow][tempCol];
+
+    if (neighbor === evaluator) {
+      return 1;
+    }
+
+    return 0;
+  }
+
+  run(ctx: CanvasRenderingContext2D): void {
+
+    if(this.useNoise) {
+      this.fillWithNoise()
+    } else {
+      this.randomizeGen0();
+    }
+
+    if(this.animate) {
+
+      this.fillCanvas(ctx);
+
+      let i = 1;
+      this.interval = setInterval(() => {
+        if(i === this.lifeCycles) {
+          clearInterval(this.interval);
+          return;
+        }
+        i++;
+        this.runLifeCycle(ctx);
+      }, 10);
+
+    } else {
+      for(let i = 0; i < this.lifeCycles; i++) {
+        this.runLifeCycle(ctx);
+      }
+    }
+
+  }
+  
+}
+
 let TIMER: any;
 
 onmessage = (e: MessageEvent) => {
@@ -650,7 +847,6 @@ onmessage = (e: MessageEvent) => {
     canvas.width = options.width;
 
     const ctx: CanvasRenderingContext2D = canvas.getContext("2d")!;
-    console.log(options);
 
     if (e.data.type === "Elementary Cellular Automata") {
       const eca = new ECA(
@@ -707,6 +903,22 @@ onmessage = (e: MessageEvent) => {
         options.drunkards
       );
       dw.init(ctx);
+      postMessage({
+        status: "completed",
+      });
+    } else if (e.data.type === "Cyclic Cellular Automata") {
+      const cca = new CCA(
+        options.cellSize,
+        options.width,
+        options.generations,
+        options.range,
+        options.threshold,
+        options.colors,
+        options.lifeCycles,
+        options.animate,
+        options.useNoise,
+      );
+      cca.run(ctx);
       postMessage({
         status: "completed",
       });

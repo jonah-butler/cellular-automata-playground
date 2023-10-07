@@ -94,3 +94,28 @@ button:focus-visible {
 .el-breadcrumb__inner {
   color: white !important;
 }
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.el-menu-item {
+  padding-left: 0px !important;
+  margin-bottom: 10px;
+}
+
+.flex-dir-col {
+  flex-direction: column;
+}
+
+.side-nav {
+  height: 100%;
+  overflow: scroll;
+  scrollbar-width: 1px;
+}
+
+.side-nav::-webkit-scrollbar {
+  width: 2px;
+  height: 0px;
+}
