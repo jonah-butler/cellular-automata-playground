@@ -1,8 +1,10 @@
 <template>
   <el-menu class="el-menu-vertical-demo">
     <el-menu-item index="1">
-      <el-icon><brush /></el-icon>
+      <span>
+        <el-icon><brush /></el-icon>
       <span>Canvas Colors</span>
+      </span>
       <div class="controls">
         <el-color-picker
           v-model="options.deadColor"
@@ -17,8 +19,10 @@
       </div>
     </el-menu-item>
     <el-menu-item index="2">
-      <el-icon><tools /></el-icon>
+      <span>
+        <el-icon><tools /></el-icon>
       <span>DW Parameters</span>
+      </span>
       <div class="controls">
         <div class="controls__item">
           <label>Cell Size</label>
@@ -79,9 +83,11 @@
       </div>
     </el-menu-item>
     <el-menu-item index="4">
-      <el-icon><operation /></el-icon>
-      <span>Controls</span>
-      <div class="controls">
+      <span>
+        <el-icon><operation /></el-icon>
+        <span>Controls</span>
+      </span>
+      <div class="controls flex-dir-col">
         <div class="controls__item">
           <el-button @click="draw" type="primary" plain>Generate</el-button>
         </div>
@@ -174,11 +180,6 @@ export default defineComponent({
 }
 .el-menu-item [class^="el-icon"] {
   margin-right: 0px;
-}
-.el-menu-item > .el-icon {
-  position: absolute;
-  left: -5px;
-  top: 10px;
 }
 .el-menu-item * {
   vertical-align: top;

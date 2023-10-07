@@ -4,12 +4,15 @@ import ECAOptionsInterface from "./interfaces/eca-options";
 import CAOptionsInterface from "./interfaces/ca-options";
 import MNOptionsInterface from "./interfaces/mn-options";
 import DWOptions from "./interfaces/dw-options";
+import CCAOptions from "./interfaces/cca-options";
 import Header from "./components/Header.vue";
 import Canvas from "./components/Canvas.vue";
 import Menu1 from "./components/SideMenu1.vue";
 import Menu2 from "./components/SideMenu2.vue";
 import Menu3 from "./components/SideMenu3.vue";
 import Menu4 from "./components/SideMenu4.vue";
+import CCAMenu from "./components/CCAMenu.vue";
+import CA_TYPES from "./data/ca-types";
 
 export default {
   components: {
@@ -19,6 +22,7 @@ export default {
     Menu3,
     Menu4,
     Canvas,
+    CCAMenu,
   },
   setup() {
     const isMobile = ref(false);
@@ -69,25 +73,25 @@ export default {
       livingColor: "#fff",
       width: 500,
       generations: 500,
-      drunkards: 10,
+      drunkards: 10, 
       steps: 1000,
     };
 
-    const caType = ref("Elementary Cellular Automata");
-    const caTypes = [
-      {
-        name: "Elementary Cellular Automata",
-      },
-      {
-        name: "Cellular Automata",
-      },
-      {
-        name: "Moore's Neighborhood",
-      },
-      {
-        name: "Drunkard's Walk",
-      },
-    ];
+    const ccaOptions = ref<CCAOptions>({
+      colors: [],
+      range: 1,
+      threshold: 2,
+      generations: 500, // add this input
+      width: 750, // add this input too
+      cellSize: 1,
+      lifeCycles: 50,
+      useNoise: true,
+      animate: true,
+    });
+
+
+    // just initialize first CA type
+    const caType = ref(CA_TYPES[CA_TYPES.length - 1].name);
 
     let canvases = ref<Array<HTMLCanvasElement>>([]);
     const loading = ref(false);
@@ -112,6 +116,10 @@ export default {
     const updateCA = (updatedType: string): void => {
       caType.value = updatedType;
     };
+
+    const updateCcaOptions = (updatedCcaOptions: any): void => {
+      ccaOptions.value = updatedCcaOptions;
+    }
 
     const clearCanvas = (): void => {
       canvases.value.pop();
@@ -142,6 +150,8 @@ export default {
         options = ecaOptions;
       } else if (emittedType === "ca") {
         options = caOptions;
+      } else if (emittedType === "cca") {
+        options = ccaOptions.value;
       } else if (emittedType === "mn") {
         options = mnOptions;
       } else {
@@ -150,6 +160,7 @@ export default {
 
       loading.value = true;
 
+      // empty previously used canvas
       if (canvases.value.length) {
         canvases.value.pop();
         document
@@ -161,6 +172,7 @@ export default {
       document
         .querySelector(".canvas-container")!
         .appendChild(canvases.value[0]);
+
       const offScreen = (canvases.value[0] as any).transferControlToOffscreen();
 
       const worker = new Worker(
@@ -192,7 +204,6 @@ export default {
       draw,
       drawer,
       caType,
-      caTypes,
       canvases,
       loading,
       updateCA,
@@ -200,15 +211,18 @@ export default {
       caOptions,
       mnOptions,
       dwOptions,
+      ccaOptions,
       isActive,
       isMobile,
       openDrawer,
       saveCanvas,
       clearCanvas,
+      updateCcaOptions,
       updateECAOptions,
       updateCAOptions,
       updateMNOptions,
       updateDWOptions,
+      CA_TYPES,
     };
   },
 };
@@ -220,13 +234,13 @@ export default {
     @updateCAType="updateCA"
     @saveCanvas="saveCanvas"
     @openDrawer="openDrawer"
-    :types="caTypes"
+    :types="CA_TYPES"
     :selectedType="caType"
     :isActive="isActive"
   />
 
   <el-row class="editor">
-    <el-col :span="4" class="hidden-sm-and-down">
+    <el-col :span="4" class="hidden-sm-and-down side-nav">
       <Menu1
         v-if="caType === 'Elementary Cellular Automata'"
         @draw="draw"
@@ -251,6 +265,14 @@ export default {
         :mnOptions="mnOptions"
         @clearCanvas="clearCanvas"
         @updateMNOptions="updateMNOptions"
+        :isActive="isActive"
+      />
+      <CCAMenu 
+        v-else-if="caType === 'Cyclic Cellular Automata'"
+        @updateCcaOptions="updateCcaOptions"
+        @draw="draw"
+        @clearCanvas="clearCanvas"
+        :options="ccaOptions"
         :isActive="isActive"
       />
       <Menu4

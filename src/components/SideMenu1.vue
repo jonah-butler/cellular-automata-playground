@@ -3,8 +3,10 @@
     class="el-menu-vertical-demo"
   >
     <el-menu-item index="1">
-      <el-icon><brush /></el-icon>
-      <span>Canvas Colors</span>
+      <span>
+        <el-icon><brush /></el-icon>
+        <span>Canvas Colors</span>
+      </span>
       <div class="controls">
         <el-color-picker
           v-model="options.zeroColor"
@@ -19,8 +21,10 @@
       </div>
     </el-menu-item>
     <el-menu-item index="2">
-      <el-icon><tools /></el-icon>
-      <span>ECA Parameters</span>
+      <span>
+        <el-icon><tools /></el-icon>
+        <span>ECA Parameters</span>
+      </span>
       <div class="controls">
         <div class="controls__item">
           <label>Cell Size</label>
@@ -78,9 +82,11 @@
       </div>
     </el-menu-item>
     <el-menu-item index="4">
-      <el-icon><operation /></el-icon>
-      <span>Controls</span>
-      <div class="controls">
+      <span>
+        <el-icon><operation /></el-icon>
+        <span>Controls</span>
+      </span>
+      <div class="controls flex-dir-col">
         <div class="controls__item">
           <el-button @click="draw" type="primary" plain>Generate</el-button>
         </div>
@@ -166,11 +172,6 @@ export default defineComponent({
 .el-menu-item [class^=el-icon] {
   margin-right: 0px;
 }
-.el-menu-item > .el-icon {
-  position: absolute;
-  left: -5px;
-  top: 10px;
-}
 .el-menu-item * {
   vertical-align: top;
 }
@@ -187,6 +188,7 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   margin-bottom: 5px;
+  width: 100%;
 }
 .controls__item label {
   color: white;
@@ -195,5 +197,8 @@ export default defineComponent({
 .controls__item .el-input-number {
   position: relative;
   top: -7px;
+}
+.controls__item .el-checkbox {
+  width: fit-content;
 }
 </style>
