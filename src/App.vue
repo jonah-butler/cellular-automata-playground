@@ -42,6 +42,7 @@ export default {
     let ecaOptions: ECAOptionsInterface = reactive({
       zeroColor: "#000",
       oneColor: "#fff",
+      colors: ["#000", "#fff"],
       rule: 90,
       generations: 1000,
       cellSize: 1,
@@ -73,7 +74,7 @@ export default {
       livingColor: "#fff",
       width: 500,
       generations: 500,
-      drunkards: 10, 
+      drunkards: 10,
       steps: 1000,
     };
 
@@ -91,7 +92,7 @@ export default {
 
 
     // just initialize first CA type
-    const caType = ref(CA_TYPES[CA_TYPES.length - 1].name);
+    const caType = ref(CA_TYPES[0].name);
 
     let canvases = ref<Array<HTMLCanvasElement>>([]);
     const loading = ref(false);
@@ -157,7 +158,7 @@ export default {
       } else {
         options = dwOptions;
       }
-
+      console.log("options...", options);
       loading.value = true;
 
       // empty previously used canvas
@@ -229,115 +230,46 @@ export default {
 </script>
 
 <template>
-<div>
-  <Header
-    @updateCAType="updateCA"
-    @saveCanvas="saveCanvas"
-    @openDrawer="openDrawer"
-    :types="CA_TYPES"
-    :selectedType="caType"
-    :isActive="isActive"
-  />
+  <div>
+    <Header @updateCAType="updateCA" @saveCanvas="saveCanvas" @openDrawer="openDrawer" :types="CA_TYPES"
+      :selectedType="caType" :isActive="isActive" />
 
-  <el-row class="editor">
-    <el-col :span="4" class="hidden-sm-and-down side-nav">
-      <Menu1
-        v-if="caType === 'Elementary Cellular Automata'"
-        @draw="draw"
-        :ecaOptions="ecaOptions"
-        @updateECAOptions="updateECAOptions"
-        @clearCanvas="clearCanvas"
-        :isActive="isActive"
-      />
+    <el-row class="editor">
+      <el-col :span="4" class="hidden-sm-and-down side-nav">
+        <Menu1 v-if="caType === 'Elementary Cellular Automata'" @draw="draw" :ecaOptions="ecaOptions"
+          @updateECAOptions="updateECAOptions" @clearCanvas="clearCanvas" :isActive="isActive" />
 
-      <Menu2
-        v-else-if="caType === 'Cellular Automata'"
-        @draw="draw"
-        :caOptions="caOptions"
-        @updateCAOptions="updateCAOptions"
-        @clearCanvas="clearCanvas"
-        :isActive="isActive"
-      />
+        <Menu2 v-else-if="caType === 'Cellular Automata'" @draw="draw" :caOptions="caOptions"
+          @updateCAOptions="updateCAOptions" @clearCanvas="clearCanvas" :isActive="isActive" />
 
-      <Menu3
-        v-else-if="caType === 'Moore\'s Neighborhood'"
-        @draw="draw"
-        :mnOptions="mnOptions"
-        @clearCanvas="clearCanvas"
-        @updateMNOptions="updateMNOptions"
-        :isActive="isActive"
-      />
-      <CCAMenu 
-        v-else-if="caType === 'Cyclic Cellular Automata'"
-        @updateCcaOptions="updateCcaOptions"
-        @draw="draw"
-        @clearCanvas="clearCanvas"
-        :options="ccaOptions"
-        :isActive="isActive"
-      />
-      <Menu4
-        v-else
-        @draw="draw"
-        :dwOptions="dwOptions"
-        @clearCanvas="clearCanvas"
-        @updateDWOptions="updateDWOptions"
-        :isActive="isActive"
-      />
-    </el-col>
-    <el-col :sm="24" :md="20" :lg="20" :xl="20" id="viewPort">
-      <el-drawer
-        v-model="drawer"
-        title="Cellular Automata Options"
-        direction="rtl"
-      >
-        <Menu1
-          v-if="caType === 'Elementary Cellular Automata'"
-          @draw="draw"
-          :ecaOptions="ecaOptions"
-          @updateECAOptions="updateECAOptions"
-          @clearCanvas="clearCanvas"
-          :isActive="isActive"
-        />
+        <Menu3 v-else-if="caType === 'Moore\'s Neighborhood'" @draw="draw" :mnOptions="mnOptions"
+          @clearCanvas="clearCanvas" @updateMNOptions="updateMNOptions" :isActive="isActive" />
+        <CCAMenu v-else-if="caType === 'Cyclic Cellular Automata'" @updateCcaOptions="updateCcaOptions" @draw="draw"
+          @clearCanvas="clearCanvas" :options="ccaOptions" :isActive="isActive" />
+        <Menu4 v-else @draw="draw" :dwOptions="dwOptions" @clearCanvas="clearCanvas" @updateDWOptions="updateDWOptions"
+          :isActive="isActive" />
+      </el-col>
+      <el-col :sm="24" :md="20" :lg="20" :xl="20" id="viewPort">
+        <el-drawer v-model="drawer" title="Cellular Automata Options" direction="rtl">
+          <Menu1 v-if="caType === 'Elementary Cellular Automata'" @draw="draw" :ecaOptions="ecaOptions"
+            @updateECAOptions="updateECAOptions" @clearCanvas="clearCanvas" :isActive="isActive" />
 
-        <Menu2
-          v-else-if="caType === 'Cellular Automata'"
-          @draw="draw"
-          :caOptions="caOptions"
-          @updateCAOptions="updateCAOptions"
-          @clearCanvas="clearCanvas"
-          :isActive="isActive"
-        />
+          <Menu2 v-else-if="caType === 'Cellular Automata'" @draw="draw" :caOptions="caOptions"
+            @updateCAOptions="updateCAOptions" @clearCanvas="clearCanvas" :isActive="isActive" />
 
-        <Menu3
-          v-else-if="caType === 'Moore\'s Neighborhood'"
-          @draw="draw"
-          :mnOptions="mnOptions"
-          @clearCanvas="clearCanvas"
-          @updateMNOptions="updateMNOptions"
-          :isActive="isActive"
-        />
-        <Menu4
-          v-else
-          @draw="draw"
-          :dwOptions="dwOptions"
-          @clearCanvas="clearCanvas"
-          @updateDWOptions="updateDWOptions"
-          :isActive="isActive"
-        />
-      </el-drawer>
+          <Menu3 v-else-if="caType === 'Moore\'s Neighborhood'" @draw="draw" :mnOptions="mnOptions"
+            @clearCanvas="clearCanvas" @updateMNOptions="updateMNOptions" :isActive="isActive" />
+          <Menu4 v-else @draw="draw" :dwOptions="dwOptions" @clearCanvas="clearCanvas" @updateDWOptions="updateDWOptions"
+            :isActive="isActive" />
+        </el-drawer>
 
-      <Canvas
-        v-if="!isMobile"
-        :canvases="canvases"
-        ref="canvas"
-        v-loading="loading"
-      />
-      <h2 v-else>
-        :( Sorry, this app uses Web Worker technology, and that is not available
-        on your current device
-      </h2>
-    </el-col>
-  </el-row>
+        <Canvas v-if="!isMobile" :canvases="canvases" ref="canvas" v-loading="loading" />
+        <h2 v-else>
+          :( Sorry, this app uses Web Worker technology, and that is not available
+          on your current device
+        </h2>
+      </el-col>
+    </el-row>
   </div>
 </template>
 
@@ -345,9 +277,11 @@ export default {
 .editor {
   height: calc(100vh - 145px);
 }
+
 #viewPort {
   height: 100%;
 }
+
 .el-drawer.rtl {
   width: 70% !important;
 }

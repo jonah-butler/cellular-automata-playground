@@ -125,7 +125,12 @@ export default defineComponent({
     Operation,
     Tools,
   },
-  setup(props, context: SetupContext) {
+  emits: [
+    "clearCanvas",
+    "updateDWOptions",
+    "draw",
+  ],
+  setup(props, { emit }) {
     const isCanvasActive = ref(props.isActive);
 
     const options = reactive({
@@ -140,21 +145,21 @@ export default defineComponent({
 
     watch(
       () => props.isActive,
-      (n, o) => {
+      (n) => {
         isCanvasActive.value = n;
       }
     );
 
     const clearCanvas = () => {
-      context.emit("clearCanvas");
+      emit("clearCanvas");
     };
 
     const emitUpdate = () => {
-      context.emit("updateDWOptions", options);
+      emit("updateDWOptions", options);
     };
 
     const draw = () => {
-      context.emit("draw", "dw");
+      emit("draw", "dw");
     };
 
     return {

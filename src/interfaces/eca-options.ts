@@ -6,4 +6,5 @@ export default interface ECAOptions {
   cellSize: number;
   width: number;
   randomize: boolean;
+  colors: string[];
 };

@@ -113,7 +113,12 @@ export default defineComponent({
     Operation,
     Tools
   },
-  setup(props, context: SetupContext) {
+  emits: [
+    "clearCanvas",
+    "updateCAOptions",
+    "draw",
+  ],
+  setup(props, { emit }) {
 
     const isCanvasActive = ref(props.isActive);
 
@@ -131,15 +136,15 @@ export default defineComponent({
     });
 
     const clearCanvas = () => {
-      context.emit('clearCanvas');
+      emit('clearCanvas');
     };
 
     const emitUpdate = () => {
-      context.emit('updateCAOptions', options);
+      emit('updateCAOptions', options);
     };
 
     const draw = () => {
-      context.emit('draw', 'ca');
+      emit('draw', 'ca');
     }
 
 

@@ -12,10 +12,10 @@
         @change="emitCAType"
       >
         <el-option
-          v-for="type in types"
-          :key="type"
-          :label="type.name"
-          :value="type.name"
+          v-for="t in types"
+          :key="t"
+          :label="t.name"
+          :value="t.name"
         />
       </el-select>
     </div>
@@ -49,7 +49,8 @@ export default defineComponent({
       type: Boolean
     }
   },
-  setup(props, context: SetupContext) {
+  emits: ["updateCAType", "saveCanvas", "openDrawer"],
+  setup(props, { emit }) {
     const caType = ref(props.selectedType);
     const isCanvasActive = ref(props.isActive);
 
@@ -58,15 +59,15 @@ export default defineComponent({
     });
 
     const saveCanvas = (): void => {
-      context.emit('saveCanvas');
+      emit('saveCanvas');
     };
 
     const emitCAType = (caType: string): void => {
-      context.emit("updateCAType", caType);
+      emit("updateCAType", caType);
     };
 
     const openDrawer = () => {
-      context.emit('openDrawer');
+      emit('openDrawer');
     }
 
     return {

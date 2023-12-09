@@ -505,6 +505,13 @@ interface RuleMap {
   [key: string]: number | null;
 }
 
+interface RuleSetParams {
+  indexes: number[];
+  rules: RuleMap;
+  depth: number;
+  step: number;
+}
+
 /**
  *
  *
@@ -523,6 +530,9 @@ class ECA {
   generations: number;
   width: number;
   ruleMap: RuleMap;
+  colors: Array<string>;
+  blocksToEval = 3;
+  customRuleMap: RuleMap;
 
   constructor(
     rule: number = 90,
@@ -531,7 +541,8 @@ class ECA {
     randomizeGen0: boolean = false,
     zeroColor: string = "#fff",
     oneColor: string = "#000",
-    cellSize: number = 1
+    cellSize: number = 1,
+    colors: string[]
   ) {
     this.cell_size = cellSize;
 
@@ -548,6 +559,10 @@ class ECA {
     this.width = width;
     this.ruleset = "";
 
+    this.colors = colors;
+
+    this.blocksToEval = 3;
+
     this.ruleMap = {
       "000": null,
       "001": null,
@@ -558,6 +573,81 @@ class ECA {
       "110": null,
       "111": null,
     };
+
+    this.customRuleMap = {};
+  }
+
+  _buildRuleMap(): void {
+
+    // must have a min of 2 color states
+    if(this.colors.length < 2) {
+      throw new Error("color states must be a minimum of 2");
+    }
+
+    this._dynamicRuleSet(this._numbersUpTo(this.colors.length), this.customRuleMap, this.blocksToEval);
+
+    this._convertRuleToDynamicBase();
+
+  }
+
+  _numbersUpTo(num: number): string[] {
+    const result = [];
+    for(let i = 0; i < num; i++) {
+      result.push((i).toString());
+    }
+    return result;
+  }
+
+  // comments so i don't forget
+  _dynamicRuleSet(arr: string[], rules: RuleMap, depth: number) {
+    function permute(prefix: string, remainingLength: number) {
+      if (remainingLength === 0) {
+        const key = prefix;
+        rules[key] = null;
+        return;
+      }
+  
+      for (let i = 0; i < arr.length; i++) {
+        permute(prefix + arr[i], remainingLength - 1);
+      }
+    }
+  
+    permute('', depth);
+  
+  }
+
+  _dynamicRuleSet2(indexes: number[], rules: RuleMap, depth: number,  step: number): RuleMap {
+    for(let i = 0; i < depth + 1; i++) {
+        
+        indexes[step] = i;
+
+        if(step === depth) {
+
+            rules[indexes.join("")] = null;
+            
+        } else {
+            
+          this._dynamicRuleSet2(indexes, rules, depth, step + 1);
+            
+        }
+        
+    }
+  return rules;
+}
+
+  _convertRuleToDynamicBase(): void {
+
+    // own method
+    const rulesCeilConversion = this.rule.toLocaleString('fullwide', {useGrouping: false});
+    // own method
+    const radixConversion = Number(rulesCeilConversion).toString(this.colors.length);
+    // own method
+    const formattedConversion = Array((Object.keys(this.customRuleMap).length) - radixConversion.length).fill("0").join("") + radixConversion;
+    // own method
+    Object.keys(this.customRuleMap).forEach((key, i) => {
+      this.customRuleMap[key] = parseInt(formattedConversion[i]);
+    });
+    console.log(this.customRuleMap);
   }
 
   _buildGeneration0(): void {
@@ -574,21 +664,6 @@ class ECA {
 
       this.cells.push(gen0);
     }
-  }
-
-  _convertRuleToBinary(): void {
-    if (this.rule < 0 || this.rule > 255 || typeof this.rule !== "number") {
-      throw new Error("value does not fit into a single byte");
-    }
-
-    // convert rule ie. 0 - 255 to base2: binary
-    const num = this.rule.toString(2);
-
-    this.ruleset =
-      Array(8 - num.length)
-        .fill(0)
-        .join("") + num;
-    this._mapRuleset();
   }
 
   _mapRuleset(): void {
@@ -609,13 +684,13 @@ class ECA {
     for (let i = 0; i < this.width; i++) {
       if (i === 0) {
         const neighborhood = `${cell[cell.length - 1]}${cell[i]}${cell[i + 1]}`;
-        newCell.push(this.ruleMap[neighborhood]!);
+        newCell.push(this.customRuleMap[neighborhood]!);
       } else if (i === cell.length - 1) {
         const neighborhood = `${cell[i - 1]}${cell[i]}${cell[0]}`;
-        newCell.push(this.ruleMap[neighborhood]!);
+        newCell.push(this.customRuleMap[neighborhood]!);
       } else {
         const neighborhood = `${cell[i - 1]}${cell[i]}${cell[i + 1]}`;
-        newCell.push(this.ruleMap[neighborhood]!);
+        newCell.push(this.customRuleMap[neighborhood]!);
       }
     }
 
@@ -625,9 +700,8 @@ class ECA {
   _fillCanvas(ctx: CanvasRenderingContext2D): void {
     for (let i = 0; i < this.cells.length; i++) {
       for (let j = 0; j < this.cells[i].length; j++) {
-        let color;
 
-        color = this.cells[i][j] === 1 ? this.one_color : this.zero_color;
+        const color = this.colors[this.cells[i][j]];
 
         ctx.fillStyle = color;
         ctx.fillRect(
@@ -642,7 +716,7 @@ class ECA {
 
   init(ctx: CanvasRenderingContext2D): void {
     this._buildGeneration0();
-    this._convertRuleToBinary();
+    this._buildRuleMap();
     this._buildEca();
     this._fillCanvas(ctx);
   }
@@ -856,7 +930,8 @@ onmessage = (e: MessageEvent) => {
         options.randomize,
         options.zeroColor,
         options.oneColor,
-        options.cellSize
+        options.cellSize,
+        options.colors,
       );
       eca.init(ctx);
       postMessage({

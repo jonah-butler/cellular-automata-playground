@@ -139,7 +139,12 @@ export default defineComponent({
       type: Boolean,
     },
   },
-  setup (props, context: SetupContext) {
+  emits: [
+    "updateCcaOptions",
+    "draw",
+    "clearCanvas",
+  ],
+  setup (props, { emit }) {
 
     const rgbCeil = 255;
     const maxThreshold = 8;
@@ -184,15 +189,15 @@ export default defineComponent({
     };
 
     const emitUpdate = (): void => {
-      context.emit("updateCcaOptions", ccaOptions);
+      emit("updateCcaOptions", ccaOptions);
     };
 
     const draw = (): void => {
-      context.emit('draw', 'cca');
+      emit('draw', 'cca');
     };
 
     const clearCanvas = (): void => {
-      context.emit('clearCanvas');
+      emit('clearCanvas');
     };
 
     watch(ccaOptions, () => {
